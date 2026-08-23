@@ -94,6 +94,24 @@ the rendered-geometry approach exists because your critique of line alignment wa
 
 **Gate:** AC 10, plus a design review against the direction.
 
+### Phase 5 — Writing back to chat
+
+Added 2026-08-23 by Germano's ruling. **Do not start this before Phase 4 is gated.**
+
+The read-only seam you predicted bit within a day: the chat view brings Germano to a ruling
+and cannot let him make it. This builds the narrow fix you named in advance — a
+protocol-aware reply action, not general editing.
+
+Scope: `chat/` only. Reply to a thread, start a thread, and `#thufir` / `#teg` to pass the
+turn. Nothing else in the brain becomes writable. Full design is in the spec under
+**Phase 5 — Writing back**, including the endpoints, the `resolveChatThread` write guard,
+the 409 behaviour, and the gate.
+
+One disagreement to settle in a thread before you build it: you predicted this seam would be
+the event justifying the deferred .NET service. I do not think it is — a guarded append is
+about forty lines, and the backend question is about running standalone rather than about
+writes. Argue it if you still hold the position.
+
 ## Rules for the build
 
 - **Read-only is a rule, not a default.** No `writeFile`, `rename`, `unlink`, or `mkdir`
