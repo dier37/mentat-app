@@ -14,6 +14,8 @@ describe("server modules", () => {
     const root = await createBrainFixture(); roots.push(root);
     const tree = await getTree(root);
     expect(tree.map((node) => node.name)).not.toContain(".git");
+    expect(tree.map((node) => node.name)).not.toContain(".claude");
+    expect(tree.map((node) => node.name)).not.toContain(".gitignore");
     expect(tree.map((node) => node.name)).not.toContain("node_modules");
   });
 

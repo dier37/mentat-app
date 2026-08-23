@@ -1,7 +1,7 @@
 import path from "node:path";
 import { realpath, stat } from "node:fs/promises";
 
-const EXCLUDED_SEGMENTS = new Set([".git", "node_modules"]);
+const EXCLUDED_SEGMENTS = new Set(["node_modules"]);
 
 export class PathError extends Error {
   constructor(message: string, readonly status: 400 | 404 = 400) {
@@ -25,7 +25,7 @@ function validateRelativePath(relPath: string): void {
 
   const segments = relPath.split(/[\\/]+/);
   if (segments.includes("..")) throw new PathError("Path traversal is not allowed");
-  if (segments.some((segment) => EXCLUDED_SEGMENTS.has(segment))) {
+  if (segments.some((segment) => (segment.startsWith(".") && segment !== ".") || EXCLUDED_SEGMENTS.has(segment))) {
     throw new PathError("Path is excluded");
   }
 }

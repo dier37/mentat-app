@@ -9,14 +9,12 @@ export interface TreeNode {
   children?: TreeNode[];
 }
 
-const EXCLUDED = new Set([".git", "node_modules"]);
-
 async function walk(root: string, absoluteDirectory: string): Promise<TreeNode[]> {
   const entries = await readdir(absoluteDirectory, { withFileTypes: true });
   const nodes: TreeNode[] = [];
 
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    if (EXCLUDED.has(entry.name)) continue;
+    if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
     const relPath = toPosixRelative(root, path.join(absoluteDirectory, entry.name));
     let guarded: string;
     try {

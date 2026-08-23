@@ -14,7 +14,7 @@ describe("resolveInRoot", () => {
     await expect(resolveInRoot(root, ".")).resolves.toBe(root);
   });
 
-  it.each(["../outside", "wiki/../../outside", "..\\outside", "/etc/passwd", "C:\\Windows\\win.ini", ".git/config", "node_modules/x", "", "   ", "bad\0path"])(
+  it.each(["../outside", "wiki/../../outside", "..\\outside", "/etc/passwd", "C:\\Windows\\win.ini", ".git/config", ".claude/settings.local.json", ".gitignore", "node_modules/x", "", "   ", "bad\0path"])(
     "rejects hostile path %j",
     async (relPath) => {
       const root = await createBrainFixture(); roots.push(root);

@@ -17,3 +17,10 @@ search, and watch must operate on the root and must all use `resolveInRoot`. The
 therefore accepts canonical root equality for the explicit relative path `.`, while empty
 and whitespace paths remain invalid. This is the standard containment predicate and does
 not permit access outside the root. Discussion: `mentat/chat/path-guard-root.md`.
+
+## 2026-08-23 — phase 2 — blanket dot-entry exclusion
+
+The Phase 1 gate exposed `.claude/` through the reader. Germano accepted blanket exclusion
+for any path segment beginning with `.`, including `.gitignore`; `node_modules/` remains
+explicit. The authoritative spec was corrected before implementation, so this records a
+Phase 1 behavior change rather than a deviation from the current spec.
