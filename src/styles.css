@@ -33,7 +33,10 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .tree-file { position: relative; padding: 5px 7px; color: var(--ink); font-size: 13px; line-height: 1.25; }
 .tree-file.is-current::before { content: ""; position: absolute; left: -6px; top: 4px; bottom: 4px; width: 2px; background: var(--sapho); }
 .raw-branch { opacity: .55; }
-.gutter-placeholder { border-right: 1px solid var(--rule); }
+.link-gutter { position: relative; border-right: 1px solid var(--rule); }
+.gutter-mark { position: absolute; left: 3px; width: 5px; min-height: 4px; border: 1px solid var(--rule); border-radius: 0; padding: 0; background: transparent; }
+.gutter-mark.resolved { background: var(--rule); cursor: pointer; }
+.gutter-mark:hover { border-color: var(--sapho); background: var(--sapho); }
 .reading-pane { min-width: 0; padding: 0 clamp(28px, 6vw, 92px) 80px; animation: reveal 120ms ease-out; }
 .file-meta { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--rule); background: var(--ground); color: var(--ink-dim); font: 12px/1.4 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .02em; }
 .article { width: min(100%, 68ch); margin: 54px auto 0; color: var(--ink); font: 18px/1.62 "Newsreader", Georgia, serif; }
@@ -53,7 +56,29 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .wikilink.resolved { text-decoration-line: underline; text-decoration-style: solid; text-decoration-color: var(--rule); }
 .wikilink.unresolved { color: var(--ink-dim); text-decoration-line: underline; text-decoration-style: dashed; text-decoration-color: var(--ink-dim); cursor: help; }
 .wikilink.ambiguous { color: var(--ink-dim); text-decoration-line: underline; text-decoration-style: double; }
+.wikilink.is-gutter-active { background: var(--surface); }
 .state-message { display: grid; place-items: center; color: var(--ink-dim); font: 15px/1.5 "IBM Plex Mono", monospace; }
+
+.context-section { margin: 0 0 30px; }
+.context-section h2 { display: flex; justify-content: space-between; margin: 0 0 10px; padding-bottom: 7px; border-bottom: 1px solid var(--rule); color: var(--ink-dim); font-size: 12px; font-weight: 400; text-transform: uppercase; }
+.context-section ul { list-style: none; margin: 0; padding: 0; }
+.context-section li { margin: 0 0 7px; overflow-wrap: anywhere; }
+.context-section button, .context-section summary { border: 0; padding: 0; background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.context-section details button { display: block; margin: 7px 0 0 10px; color: var(--ink-dim); }
+.context-section p { margin: 0; }
+.unresolved-list h2, .unresolved-list li { color: var(--ink); }
+
+.palette-backdrop { position: fixed; z-index: 10; inset: 0; display: grid; place-items: start center; padding-top: 12vh; background: rgb(15 17 23 / 78%); }
+.search-palette { width: min(680px, calc(100vw - 32px)); max-height: 72vh; overflow: hidden; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font: 12px/1.45 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .02em; }
+.search-palette > label { display: block; padding: 14px 16px 4px; color: var(--ink-dim); text-transform: uppercase; }
+.search-palette > input { width: calc(100% - 32px); margin: 0 16px 12px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; outline: 0; background: transparent; color: var(--ink); }
+.palette-results { max-height: 56vh; overflow: auto; border-top: 1px solid var(--rule); }
+.palette-results > button { display: grid; grid-template-columns: 64px 1fr; gap: 2px 12px; width: 100%; padding: 10px 16px; border: 0; background: transparent; color: var(--ink); text-align: left; }
+.palette-results > button.is-active { background: var(--ground); }
+.result-kind { grid-row: 1 / span 2; color: var(--ink-dim); text-transform: uppercase; }
+.result-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.result-context { overflow: hidden; color: var(--ink-dim); text-overflow: ellipsis; white-space: nowrap; }
+.palette-results > p { padding: 18px 16px; color: var(--ink-dim); }
 @keyframes reveal { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .reading-pane { animation: none; } }
-@media (max-width: 899px) { .app-shell { grid-template-columns: minmax(0, 1fr); } .tree, .context-rail, .gutter-placeholder { display: none; } .reading-pane { padding-inline: 22px; } }
+@media (max-width: 899px) { .app-shell { grid-template-columns: minmax(0, 1fr); } .tree, .context-rail, .link-gutter { display: none; } .reading-pane { padding-inline: 22px; } }

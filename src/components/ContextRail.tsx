@@ -1,0 +1,37 @@
+import type { LinkResult } from "../types";
+
+interface ContextRailProps {
+  links?: LinkResult;
+  onNavigate: (path: string) => void;
+}
+
+export function ContextRail({ links, onNavigate }: ContextRailProps) {
+  const outbound = links?.outbound ?? [];
+  const inbound = links?.inbound ?? [];
+  const unresolved = links?.unresolved ?? [];
+  return (
+    <aside className="context-rail" aria-label="Document context">
+      <div className="rail-heading"><span>Context</span><span>{outbound.length + inbound.length}</span></div>
+      <section className="context-section unresolved-list">
+        <h2>Unresolved <span>{unresolved.length}</span></h2>
+        {unresolved.length ? <ul>{unresolved.map((target) => <li key={target}>{target}</li>)}</ul> : <p>None</p>}
+      </section>
+      <section className="context-section">
+        <h2>Inbound <span>{inbound.length}</span></h2>
+        {inbound.length ? <ul>{inbound.map((path) => <li key={path}><button type="button" onClick={() => onNavigate(path)}>{path.replace(/\.md$/, "")}</button></li>)}</ul> : <p>None</p>}
+      </section>
+      <section className="context-section">
+        <h2>Outbound <span>{outbound.length}</span></h2>
+        {outbound.length ? <ul>{outbound.map((link, index) => (
+          <li key={`${link.target}-${index}`}>
+            {link.candidates.length === 1
+              ? <button type="button" onClick={() => onNavigate(link.candidates[0])}>{link.target}</button>
+              : link.candidates.length > 1
+                ? <details><summary>{link.target} <span>{link.candidates.length}</span></summary>{link.candidates.map((candidate) => <button key={candidate} type="button" onClick={() => onNavigate(candidate)}>{candidate}</button>)}</details>
+                : <span>{link.target}</span>}
+          </li>
+        ))}</ul> : <p>None</p>}
+      </section>
+    </aside>
+  );
+}

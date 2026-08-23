@@ -24,3 +24,11 @@ The Phase 1 gate exposed `.claude/` through the reader. Germano accepted blanket
 for any path segment beginning with `.`, including `.gitignore`; `node_modules/` remains
 explicit. The authoritative spec was corrected before implementation, so this records a
 Phase 1 behavior change rather than a deviation from the current spec.
+
+## 2026-08-23 — phase 2 — deterministic browser gate mode
+
+The app skips its otherwise permanent SSE connection when loaded with `?live=0`. This is a
+small verification-only addition not named in the spec: headless Chrome's screenshot and
+DOM modes wait for network idle, which a correct EventSource deliberately prevents. Normal
+URLs retain live updates. The browser process must still run with a hard timeout and
+isolated password/crash-reporting flags; discussion: `mentat/chat/chrome-keyring-prompt.md`.

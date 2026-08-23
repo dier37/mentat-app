@@ -1,4 +1,4 @@
-import type { BrainFile, LinkResult, TreeNode } from "./types";
+import type { BrainFile, LinkResult, SearchResult, TreeNode } from "./types";
 
 async function request<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -13,3 +13,4 @@ async function request<T>(url: string): Promise<T> {
 export const getTree = () => request<TreeNode[]>("/api/tree");
 export const getFile = (path: string) => request<BrainFile>(`/api/file?path=${encodeURIComponent(path)}`);
 export const getLinks = (path: string) => request<LinkResult>(`/api/links?path=${encodeURIComponent(path)}`);
+export const searchFiles = (query: string) => request<SearchResult[]>(`/api/search?q=${encodeURIComponent(query)}`);

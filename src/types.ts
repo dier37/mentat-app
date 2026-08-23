@@ -28,3 +28,17 @@ export interface ChangeEvent {
   type: "change";
   path: string;
 }
+
+export interface SearchResult {
+  path: string;
+  line: number;
+  text: string;
+}
+
+export interface GutterMark {
+  top: number;
+  height: number;
+  resolved: boolean;
+  target?: string;
+  indexes: number[];
+}
