@@ -6,7 +6,7 @@ import { routeDraft } from "../src/components/ChatComposer";
 
 const markdown = `# Test Thread
 
-> A conversation fixture.
+> A conversation about \`fixture code\`.
 
 Status: open · Awaiting: germano · Started: 2026-08-23
 
@@ -37,7 +37,7 @@ describe("chat view", () => {
     expect(markup).toContain("Teg");
     expect(markup).toContain("newcomer");
     expect(markup).toContain("awaiting-germano");
-    expect(markup).toContain("A conversation fixture.");
+    expect(markup).toContain("A conversation about <code>fixture code</code>.");
   });
 
   it("sorts Germano's turn first, then active turns, then idle threads", () => {

@@ -5,6 +5,10 @@ import { displayAgent, parseChatThread, queuedAge, sortChatThreads, type ChatThr
 import type { BrainFile } from "../types";
 import { ReplyComposer } from "./ChatComposer";
 
+function InlineMarkdown({ children }: { children: string }) {
+  return <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: ({ children: content }) => <>{content}</> }}>{children}</ReactMarkdown>;
+}
+
 interface ChatViewProps {
   file: BrainFile;
   onUpdated: (file: BrainFile) => void;
@@ -19,7 +23,7 @@ export function ChatView({ file, onUpdated }: ChatViewProps) {
         <header className="conversation-header">
           <p className="conversation-kicker">Conversation</p>
           <h1>{thread.title}</h1>
-          {thread.summary && <p className="conversation-summary">{thread.summary}</p>}
+          {thread.summary && <p className="conversation-summary"><InlineMarkdown>{thread.summary}</InlineMarkdown></p>}
           <p className="thread-status">Status: {thread.status} · Awaiting: {displayAgent(thread.awaiting)}</p>
         </header>
         {thread.entries.map((entry, index) => (

@@ -45,14 +45,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .article h2 { margin: 48px 0 16px; font-size: 24px; }
 .article h3 { margin: 34px 0 12px; font-size: 20px; }
 .article p, .article ul, .article ol { margin: 0 0 1.2em; }
-.article blockquote { margin: 0 0 32px; padding: 0 0 18px; border-bottom: 1px solid var(--rule); color: var(--ink-dim); font-size: 20px; line-height: 1.42; }
-.article blockquote p { margin: 0; }
-.article table { width: 100%; border-collapse: collapse; margin: 28px 0; font-size: 15px; }
-.article th, .article td { padding: 9px 12px; border: 1px solid var(--rule); text-align: left; vertical-align: top; }
-.article th { font-weight: 600; }
+.article blockquote, .speaker-content blockquote { margin: 0 0 32px; padding: 0 0 18px; border-bottom: 1px solid var(--rule); color: var(--ink-dim); font-size: 20px; line-height: 1.42; }
+.article blockquote p, .speaker-content blockquote p { margin: 0; }
+.article table, .speaker-content table { width: 100%; border-collapse: collapse; margin: 28px 0; font-size: 15px; }
+.article th, .article td, .speaker-content th, .speaker-content td { padding: 9px 12px; border: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.article th, .speaker-content th { font-weight: 600; }
 .article code { font: .82em/1.5 "IBM Plex Mono", ui-monospace, monospace; }
 .article pre { overflow: auto; margin: 28px 0; padding: 18px; border: 1px solid var(--rule); background: var(--surface); font-size: 15px; }
-.article a, .wikilink { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.article a, .speaker-content a, .wikilink { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .wikilink.resolved { text-decoration-line: underline; text-decoration-style: solid; text-decoration-color: var(--rule); }
 .wikilink.unresolved { color: var(--ink-dim); text-decoration-line: underline; text-decoration-style: dashed; text-decoration-color: var(--ink-dim); cursor: help; }
 .wikilink.ambiguous { color: var(--ink-dim); text-decoration-line: underline; text-decoration-style: double; }
@@ -86,13 +86,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .conversation-kicker, .thread-status { margin: 0 0 10px; color: var(--ink-dim); font: 12px/1.5 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .02em; text-transform: uppercase; }
 .conversation-header h1 { margin: 0 0 14px; font: 600 32px/1.14 "Newsreader", Georgia, serif; }
 .conversation-summary { margin: 0 0 16px; color: var(--ink-dim); font: 19px/1.45 "Newsreader", Georgia, serif; }
+.conversation-summary a { color: inherit; text-underline-offset: 3px; }
+.conversation-summary code { font: .78em/1.4 "IBM Plex Mono", ui-monospace, monospace; }
 .awaiting-germano .thread-status, .chat-rail .awaiting-germano small { color: var(--sapho); }
 .speaker-block { margin: 0 0 34px; padding-left: 20px; border-left: 2px solid var(--ink-dim); }
 .speaker-block.speaker-chatgpt { border-left-color: #68748c; }
 .speaker-block.speaker-germano { border-left-color: var(--ink); }
 .speaker-block > header { display: flex; justify-content: space-between; gap: 18px; margin-bottom: 12px; color: var(--ink-dim); font: 12px/1.4 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .02em; text-transform: uppercase; }
 .speaker-content { color: var(--ink); font: 18px/1.62 "Newsreader", Georgia, serif; }
-.speaker-content h2 { margin: 30px 0 12px; font-size: 24px; }
+.speaker-content h1, .speaker-content h2 { margin: 30px 0 12px; font-size: 24px; }
 .speaker-content h3 { margin: 24px 0 10px; font-size: 20px; }
 .speaker-content p, .speaker-content ul, .speaker-content ol { margin: 0 0 1em; }
 .speaker-content pre { overflow: auto; padding: 14px; border: 1px solid var(--rule); background: var(--surface); }
