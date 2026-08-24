@@ -3,14 +3,21 @@ import { getFile, getLinks, getTree } from "./api";
 import { FileTree } from "./components/FileTree";
 import { ContextRail } from "./components/ContextRail";
 import { Gutter } from "./components/Gutter";
+import { ChatThreadRail, ChatView } from "./components/ChatView";
 import { Reader } from "./components/Reader";
 import { SearchPalette } from "./components/SearchPalette";
 import type { BrainFile, ChangeEvent, GutterMark, LinkResult, TreeNode } from "./types";
+import { parseChatThread, type ChatThread } from "./chat";
 
 const INITIAL_FILE = "CLAUDE.md";
 
 function pathFromLocation(): string {
   return new URLSearchParams(window.location.search).get("path") ?? INITIAL_FILE;
+}
+
+function directChatPaths(nodes: TreeNode[]): string[] {
+  const chat = nodes.find((node) => node.type === "folder" && node.path === "chat");
+  return (chat?.children ?? []).filter((node) => node.type === "file" && node.name !== "README.md").map((node) => node.path);
 }
 
 export default function App() {
@@ -22,17 +29,27 @@ export default function App() {
   const [error, setError] = useState<string>();
   const [marks, setMarks] = useState<GutterMark[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
+  const [treeOpen, setTreeOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
   const selectedPathRef = useRef(selectedPath);
 
-  const loadTree = useCallback(async () => setTree(await getTree()), []);
+  const loadTree = useCallback(async () => {
+    const nextTree = await getTree();
+    setTree(nextTree);
+    const threadFiles = await Promise.all(directChatPaths(nextTree).map((path) => getFile(path)));
+    setChatThreads(threadFiles.map((thread) => parseChatThread(thread.path, thread.content)));
+  }, []);
   const navigate = useCallback((path: string) => {
-    setSelectedPath((current) => {
-      if (current === path) return current;
-      const url = new URL(window.location.href);
-      url.searchParams.set("path", path);
-      window.history.pushState({}, "", url);
-      return path;
-    });
+    if (selectedPathRef.current === path) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("path", path);
+    window.history.pushState({}, "", url);
+    selectedPathRef.current = path;
+    setLoading(true);
+    setSelectedPath(path);
+    setTreeOpen(false);
+    setContextOpen(false);
   }, []);
   const loadDocument = useCallback(async (path: string) => {
     setLoading(true);
@@ -52,7 +69,12 @@ export default function App() {
   useEffect(() => { void loadDocument(selectedPath); }, [loadDocument, selectedPath]);
   useEffect(() => { selectedPathRef.current = selectedPath; }, [selectedPath]);
   useEffect(() => {
-    const handlePopState = () => setSelectedPath(pathFromLocation());
+    const handlePopState = () => {
+      const path = pathFromLocation();
+      selectedPathRef.current = path;
+      setLoading(true);
+      setSelectedPath(path);
+    };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
@@ -83,13 +105,21 @@ export default function App() {
       if (indexes.includes(Number(element.dataset.wikilinkIndex))) element.classList.toggle("is-gutter-active", active);
     });
   }, []);
+  const isChat = selectedPath.startsWith("chat/") && selectedPath.split("/").length === 2 && selectedPath !== "chat/README.md";
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${treeOpen ? " tree-open" : ""}${contextOpen ? " context-open" : ""}`}>
+      <div className="mobile-toolbar">
+        <button type="button" aria-expanded={treeOpen} onClick={() => { setTreeOpen((value) => !value); setContextOpen(false); }}>Files</button>
+        <span>{selectedPath}</span>
+        <button type="button" aria-expanded={contextOpen} onClick={() => { setContextOpen((value) => !value); setTreeOpen(false); }}>{isChat ? "Threads" : "Context"}</button>
+      </div>
       <FileTree nodes={tree} selectedPath={selectedPath} onSelect={navigate} />
-      <Gutter marks={marks} onNavigate={navigate} onHighlight={highlightLinks} />
-      <Reader file={file} links={links} loading={loading} error={error} onNavigate={navigate} onMarks={updateMarks} />
-      <ContextRail links={links} onNavigate={navigate} />
+      <Gutter marks={isChat ? [] : marks} onNavigate={navigate} onHighlight={highlightLinks} />
+      {isChat && file && !loading && !error
+        ? <ChatView file={file} />
+        : <Reader file={file} links={links} loading={loading} error={error} onNavigate={navigate} onMarks={updateMarks} />}
+      {isChat ? <ChatThreadRail threads={chatThreads} selectedPath={selectedPath} onNavigate={navigate} /> : <ContextRail links={links} onNavigate={navigate} />}
       <SearchPalette open={searchOpen} tree={tree} onClose={() => setSearchOpen(false)} onNavigate={navigate} />
     </div>
   );
