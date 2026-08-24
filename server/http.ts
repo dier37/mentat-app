@@ -5,6 +5,7 @@ import { PathError } from "./paths";
 import { searchFiles } from "./search";
 import { getTree } from "./tree";
 import { watchBrain, type ChangeEvent } from "./watch";
+import { ChatConflictError, createThread, replyToThread, type ReplyInput, type ThreadInput } from "./chat";
 
 type Next = (error?: unknown) => void;
 
@@ -23,6 +24,25 @@ function single(params: URLSearchParams, name: string, required = false): string
   return value;
 }
 
+async function readJson<T>(request: IncomingMessage): Promise<T> {
+  if (!request.headers["content-type"]?.toLocaleLowerCase().startsWith("application/json")) {
+    throw new PathError("Content-Type must be application/json");
+  }
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+    if (size > 64 * 1024) throw new PathError("Request body is too large");
+    chunks.push(buffer);
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf8")) as T;
+  } catch {
+    throw new PathError("Request body must be valid JSON");
+  }
+}
+
 export function createApiMiddleware(root: string) {
   const streams = new Set<ServerResponse>();
   let stopWatcher: (() => void) | undefined;
@@ -36,6 +56,12 @@ export function createApiMiddleware(root: string) {
       if (!request.url) return next();
       const url = new URL(request.url, "http://127.0.0.1");
       if (!url.pathname.startsWith("/api/")) return next();
+      if (request.method === "POST" && url.pathname === "/api/chat/reply") {
+        return json(response, 200, await replyToThread(root, await readJson<ReplyInput>(request)));
+      }
+      if (request.method === "POST" && url.pathname === "/api/chat/thread") {
+        return json(response, 201, await createThread(root, await readJson<ThreadInput>(request)));
+      }
       if (request.method !== "GET") return json(response, 405, { error: "Method not allowed" });
 
       if (url.pathname === "/api/tree") {
@@ -71,6 +97,9 @@ export function createApiMiddleware(root: string) {
       }
       return json(response, 404, { error: "API route not found" });
     } catch (error) {
+      if (error instanceof ChatConflictError) {
+        return json(response, 409, { error: error.message, current: error.current });
+      }
       const status = error instanceof PathError ? error.status : 500;
       const message = error instanceof Error ? error.message : "Unknown error";
       return json(response, status, { error: status === 500 ? "Internal server error" : message });

@@ -32,3 +32,9 @@ small verification-only addition not named in the spec: headless Chrome's screen
 DOM modes wait for network idle, which a correct EventSource deliberately prevents. Normal
 URLs retain live updates. The browser process must still run with a hard timeout and
 isolated password/crash-reporting flags; discussion: `mentat/chat/chrome-keyring-prompt.md`.
+
+## 2026-08-24 — phase 5 — thread summaries in both chat surfaces
+
+The omitted protocol summary is now parsed once and shown beneath the open thread title and
+as a two-line clamp in the thread rail. This folds `mentat/chat/chat-view-drops-summary.md`
+into Phase 5 as requested. It does not deviate from the Phase 5 write contract.

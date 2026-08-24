@@ -4,6 +4,7 @@ import { FileTree } from "./components/FileTree";
 import { ContextRail } from "./components/ContextRail";
 import { Gutter } from "./components/Gutter";
 import { ChatThreadRail, ChatView } from "./components/ChatView";
+import { NewThreadComposer } from "./components/ChatComposer";
 import { Reader } from "./components/Reader";
 import { SearchPalette } from "./components/SearchPalette";
 import type { BrainFile, ChangeEvent, GutterMark, LinkResult, TreeNode } from "./types";
@@ -32,6 +33,7 @@ export default function App() {
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [treeOpen, setTreeOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const [newThreadOpen, setNewThreadOpen] = useState(false);
   const selectedPathRef = useRef(selectedPath);
 
   const loadTree = useCallback(async () => {
@@ -105,6 +107,12 @@ export default function App() {
       if (indexes.includes(Number(element.dataset.wikilinkIndex))) element.classList.toggle("is-gutter-active", active);
     });
   }, []);
+  const acceptChatFile = useCallback((updated: BrainFile) => {
+    setFile(updated);
+    setLoading(false);
+    void getLinks(updated.path).then(setLinks);
+    void loadTree();
+  }, [loadTree]);
   const isChat = selectedPath.startsWith("chat/") && selectedPath.split("/").length === 2 && selectedPath !== "chat/README.md";
 
   return (
@@ -117,10 +125,11 @@ export default function App() {
       <FileTree nodes={tree} selectedPath={selectedPath} onSelect={navigate} />
       <Gutter marks={isChat ? [] : marks} onNavigate={navigate} onHighlight={highlightLinks} />
       {isChat && file && !loading && !error
-        ? <ChatView file={file} />
+        ? <ChatView file={file} onUpdated={acceptChatFile} />
         : <Reader file={file} links={links} loading={loading} error={error} onNavigate={navigate} onMarks={updateMarks} />}
-      {isChat ? <ChatThreadRail threads={chatThreads} selectedPath={selectedPath} onNavigate={navigate} /> : <ContextRail links={links} onNavigate={navigate} />}
+      {isChat ? <ChatThreadRail threads={chatThreads} selectedPath={selectedPath} onNavigate={navigate} onNewThread={() => setNewThreadOpen(true)} /> : <ContextRail links={links} onNavigate={navigate} />}
       <SearchPalette open={searchOpen} tree={tree} onClose={() => setSearchOpen(false)} onNavigate={navigate} />
+      <NewThreadComposer open={newThreadOpen} onClose={() => setNewThreadOpen(false)} onCreated={(created) => { acceptChatFile(created); navigate(created.path); }} />
     </div>
   );
 }

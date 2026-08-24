@@ -7,6 +7,7 @@ export interface ChatEntry {
 export interface ChatThread {
   path: string;
   title: string;
+  summary?: string;
   status: string;
   awaiting: string;
   entries: ChatEntry[];
@@ -19,6 +20,8 @@ export function parseChatThread(path: string, markdown: string): ChatThread {
   const title = markdown.match(/^# (.+)$/m)?.[1].trim() ?? path.replace(/^chat\//, "").replace(/\.md$/, "");
   const header = markdown.match(/^Status:\s*([^\n·]+?)\s*·\s*Awaiting:\s*([^\n·]+?)(?:\s*·|$)/m);
   const matches = [...markdown.matchAll(ENTRY_HEADER)];
+  const preamble = markdown.slice(0, matches[0]?.index ?? markdown.length);
+  const summary = preamble.match(/^>\s*(.+(?:\n>\s*.*)*)$/m)?.[1].replace(/\n>\s*/g, " ").trim();
   const entries = matches.map((match, index) => ({
     timestamp: match[1],
     agent: match[2].toLocaleLowerCase(),
@@ -27,11 +30,22 @@ export function parseChatThread(path: string, markdown: string): ChatThread {
   return {
     path,
     title,
+    summary,
     status: header?.[1].trim().toLocaleLowerCase() ?? "unknown",
     awaiting: header?.[2].trim().toLocaleLowerCase() ?? "nobody",
     entries,
     lastTimestamp: entries.at(-1)?.timestamp ?? "",
   };
+}
+
+export function queuedAge(timestamp: string, now = new Date()): string {
+  const instant = new Date(`${timestamp.slice(0, 10)}T${timestamp.slice(11, 16)}:00Z`).getTime();
+  const minutes = Math.max(0, Math.floor((now.getTime() - instant) / 60_000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
 }
 
 export function displayAgent(key: string): string {

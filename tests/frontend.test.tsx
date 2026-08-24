@@ -10,6 +10,7 @@ const file: BrainFile = {
   path: "MEMORY.md",
   content: "# Memory\n\n> A standfirst.\n\nSee [[second-brain]] and [[not-written]]. `[[literal]]`\n",
   mtime: "2026-08-23T00:00:00.000Z",
+  version: "fixture-version",
 };
 
 const links: LinkResult = {

@@ -9,6 +9,7 @@ export interface BrainFile {
   path: string;
   content: string;
   mtime: string;
+  version: string;
 }
 
 export interface OutboundLink {

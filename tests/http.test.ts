@@ -27,6 +27,10 @@ async function status(wirePath: string): Promise<number> {
   return (await fetch(`${baseUrl}${wirePath}`)).status;
 }
 
+async function post(route: string, body: unknown): Promise<Response> {
+  return fetch(`${baseUrl}${route}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+}
+
 describe("HTTP path boundary", () => {
   it.each([
     "/api/file?path=../../etc/passwd",
@@ -45,5 +49,23 @@ describe("HTTP path boundary", () => {
   it("serves sane JSON", async () => {
     const response = await fetch(`${baseUrl}/api/file?path=CLAUDE.md`);
     await expect(response.json()).resolves.toMatchObject({ path: "CLAUDE.md" });
+  });
+});
+
+describe("chat HTTP boundary", () => {
+  it.each(["../CLAUDE.md", "meta/onboarding-chatgpt.md", "README.md"])("rejects reply target %s with 400", async (thread) => {
+    const response = await post("/api/chat/reply", { thread, body: "attack", awaiting: "nobody", version: "x" });
+    expect(response.status).toBe(400);
+  });
+
+  it("returns current thread content with a stale-version 409", async () => {
+    const response = await post("/api/chat/reply", { thread: "chat/test-thread.md", body: "draft", awaiting: "nobody", version: "stale" });
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({ current: { path: "chat/test-thread.md", content: expect.stringContaining("Opening.") } });
+  });
+
+  it("returns 409 when a thread slug already exists", async () => {
+    const response = await post("/api/chat/thread", { slug: "test-thread", title: "Duplicate", summary: "No overwrite.", body: "draft", awaiting: "nobody" });
+    expect(response.status).toBe(409);
   });
 });
