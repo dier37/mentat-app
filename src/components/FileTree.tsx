@@ -5,6 +5,7 @@ interface FileTreeProps {
   nodes: TreeNode[];
   selectedPath: string;
   onSelect: (path: string) => void;
+  onQuery: () => void;
 }
 
 export function fuzzyMatch(value: string, query: string): boolean {
@@ -49,12 +50,13 @@ function Branch({ node, selectedPath, onSelect, forceOpen }: { node: TreeNode; s
   );
 }
 
-export function FileTree({ nodes, selectedPath, onSelect }: FileTreeProps) {
+export function FileTree({ nodes, selectedPath, onSelect, onQuery }: FileTreeProps) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => filterTree(nodes, query.trim()), [nodes, query]);
   return (
     <nav className="tree" aria-label="Knowledge files">
       <div className="rail-heading"><span>Files</span><span>{nodes.length}</span></div>
+      <button className="query-launch" type="button" onClick={onQuery}>Ask the wiki</button>
       <label className="filter-label" htmlFor="tree-filter">Filter files</label>
       <input id="tree-filter" className="tree-filter" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find by name" />
       <ul className="tree-root">{filtered.map((node) => <Branch key={node.path} node={node} selectedPath={selectedPath} onSelect={onSelect} forceOpen={Boolean(query.trim())} />)}</ul>

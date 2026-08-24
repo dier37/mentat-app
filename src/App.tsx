@@ -7,6 +7,7 @@ import { ChatThreadRail, ChatView } from "./components/ChatView";
 import { NewThreadComposer } from "./components/ChatComposer";
 import { Reader } from "./components/Reader";
 import { SearchPalette } from "./components/SearchPalette";
+import { QueryPane } from "./components/QueryPane";
 import type { BrainFile, ChangeEvent, GutterMark, LinkResult, TreeNode } from "./types";
 import { parseChatThread, type ChatThread } from "./chat";
 
@@ -34,6 +35,7 @@ export default function App() {
   const [treeOpen, setTreeOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [newThreadOpen, setNewThreadOpen] = useState(false);
+  const [queryOpen, setQueryOpen] = useState(false);
   const selectedPathRef = useRef(selectedPath);
 
   const loadTree = useCallback(async () => {
@@ -122,7 +124,7 @@ export default function App() {
         <span>{selectedPath}</span>
         <button type="button" aria-expanded={contextOpen} onClick={() => { setContextOpen((value) => !value); setTreeOpen(false); }}>{isChat ? "Threads" : "Context"}</button>
       </div>
-      <FileTree nodes={tree} selectedPath={selectedPath} onSelect={navigate} />
+      <FileTree nodes={tree} selectedPath={selectedPath} onSelect={navigate} onQuery={() => setQueryOpen(true)} />
       <Gutter marks={isChat ? [] : marks} onNavigate={navigate} onHighlight={highlightLinks} />
       {isChat && file && !loading && !error
         ? <ChatView file={file} onUpdated={acceptChatFile} />
@@ -130,6 +132,7 @@ export default function App() {
       {isChat ? <ChatThreadRail threads={chatThreads} selectedPath={selectedPath} onNavigate={navigate} onNewThread={() => setNewThreadOpen(true)} /> : <ContextRail links={links} onNavigate={navigate} />}
       <SearchPalette open={searchOpen} tree={tree} onClose={() => setSearchOpen(false)} onNavigate={navigate} />
       <NewThreadComposer open={newThreadOpen} onClose={() => setNewThreadOpen(false)} onCreated={(created) => { acceptChatFile(created); navigate(created.path); }} />
+      <QueryPane open={queryOpen} onClose={() => setQueryOpen(false)} onNavigate={(path) => { setQueryOpen(false); navigate(path); }} onKept={(created) => { void loadTree(); setQueryOpen(false); navigate(created.path); }} />
     </div>
   );
 }

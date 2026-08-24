@@ -30,3 +30,4 @@ export const getLinks = (path: string) => request<LinkResult>(`/api/links?path=$
 export const searchFiles = (query: string) => request<SearchResult[]>(`/api/search?q=${encodeURIComponent(query)}`);
 export const replyToThread = (input: { thread: string; body: string; awaiting: "claude" | "chatgpt" | "nobody"; version: string }) => post<BrainFile>("/api/chat/reply", input);
 export const createThread = (input: { slug: string; title: string; summary: string; body: string; awaiting: "claude" | "chatgpt" | "nobody" }) => post<BrainFile>("/api/chat/thread", input);
+export const keepQueryAnswer = (input: { slug: string; question: string; answer: string; read: string[]; equivalentUsd: number | null; durationMs: number | null; turns: number | null }) => post<BrainFile>("/api/query/keep", input);

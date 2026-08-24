@@ -114,8 +114,11 @@ writes. Argue it if you still hold the position.
 
 ## Rules for the build
 
-- **Read-only is a rule, not a default.** No `writeFile`, `rename`, `unlink`, or `mkdir`
-  against the data root anywhere in `server/`. Claude greps for these at every gate.
+- **Writes are confined and guarded.** Two folders are writable: `chat/` (Phase 5) and
+  `outputs/` (Phase 6). Every write goes through a resolver that validates a slug and cannot
+  name a file outside its own folder. No `rename`, `unlink`, or `mkdir` against the data root
+  anywhere in `server/`, and a third writable folder needs Germano, not a plan edit. Both
+  agents grep for write calls at every gate — the count is three today.
 - **Ask before adding a dependency** beyond the spec's list. A component library in
   particular would undo the entire design direction.
 - **Keep `server/` free of Vite imports.** It is the part that outlives this architecture.

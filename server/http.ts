@@ -6,6 +6,8 @@ import { searchFiles } from "./search";
 import { getTree } from "./tree";
 import { watchBrain, type ChangeEvent } from "./watch";
 import { ChatConflictError, createThread, replyToThread, type ReplyInput, type ThreadInput } from "./chat";
+import { OutputConflictError, saveAnswer, type SaveInput } from "./outputs";
+import { QueryError, runQuery, type QueryEvent } from "./query";
 
 type Next = (error?: unknown) => void;
 
@@ -62,6 +64,9 @@ export function createApiMiddleware(root: string) {
       if (request.method === "POST" && url.pathname === "/api/chat/thread") {
         return json(response, 201, await createThread(root, await readJson<ThreadInput>(request)));
       }
+      if (request.method === "POST" && url.pathname === "/api/query/keep") {
+        return json(response, 201, await saveAnswer(root, await readJson<SaveInput>(request)));
+      }
       if (request.method !== "GET") return json(response, 405, { error: "Method not allowed" });
 
       if (url.pathname === "/api/tree") {
@@ -77,6 +82,21 @@ export function createApiMiddleware(root: string) {
       }
       if (url.pathname === "/api/links") {
         return json(response, 200, await getLinks(root, single(url.searchParams, "path", true)!));
+      }
+      if (url.pathname === "/api/query") {
+        const question = single(url.searchParams, "q", true)!;
+        const handle = runQuery(root, question, (event: QueryEvent) => {
+          if (!response.writableEnded) response.write(`data: ${JSON.stringify(event)}\n\n`);
+        });
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "text/event-stream");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Connection", "keep-alive");
+        response.write("\n");
+        request.on("close", () => handle.cancel());
+        await handle.finished;
+        if (!response.writableEnded) response.end();
+        return;
       }
       if (url.pathname === "/api/events") {
         response.statusCode = 200;
@@ -99,6 +119,12 @@ export function createApiMiddleware(root: string) {
     } catch (error) {
       if (error instanceof ChatConflictError) {
         return json(response, 409, { error: error.message, current: error.current });
+      }
+      if (error instanceof OutputConflictError) {
+        return json(response, 409, { error: error.message });
+      }
+      if (error instanceof QueryError) {
+        return json(response, error.status, { error: error.message });
       }
       const status = error instanceof PathError ? error.status : 500;
       const message = error instanceof Error ? error.message : "Unknown error";
