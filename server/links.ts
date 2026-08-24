@@ -2,8 +2,7 @@ import path from "node:path";
 import { getFile } from "./file";
 import { resolveInRoot } from "./paths";
 import { listMarkdownFiles } from "./tree";
-
-const WIKILINK = /\[\[([^\]]+)\]\]/g;
+import { extractWikilinks } from "../wikilinks";
 
 export interface OutboundLink {
   target: string;
@@ -19,7 +18,7 @@ export interface LinkResult {
 }
 
 function targets(content: string): string[] {
-  return [...content.matchAll(WIKILINK)].map((match) => match[1].trim());
+  return extractWikilinks(content).map((link) => link.target);
 }
 
 export async function getLinks(root: string, relPath: string): Promise<LinkResult> {

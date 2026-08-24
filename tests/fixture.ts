@@ -9,7 +9,7 @@ export async function createBrainFixture(): Promise<string> {
   await mkdir(path.join(root, "node_modules"));
   await mkdir(path.join(root, "wiki", "concepts"), { recursive: true });
   await mkdir(path.join(root, "projects"));
-  await writeFile(path.join(root, "CLAUDE.md"), "# Brain\n\nSee [[alpha]] and [[missing]].\n");
+  await writeFile(path.join(root, "CLAUDE.md"), "# Brain\n\nSee [[alpha]] and [[missing]]. `[[phantom]]`\n\n```md\n[[fenced-phantom]]\n```\n");
   await writeFile(path.join(root, ".git", "config"), "secret");
   await writeFile(path.join(root, ".claude", "settings.local.json"), "secret");
   await writeFile(path.join(root, ".gitignore"), "secret");

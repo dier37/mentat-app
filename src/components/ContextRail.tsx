@@ -7,6 +7,12 @@ interface ContextRailProps {
 
 export function ContextRail({ links, onNavigate }: ContextRailProps) {
   const outbound = links?.outbound ?? [];
+  const outboundGroups = [...outbound.reduce((groups, link) => {
+    const existing = groups.get(link.target);
+    if (existing) existing.count += 1;
+    else groups.set(link.target, { link, count: 1 });
+    return groups;
+  }, new Map<string, { link: (typeof outbound)[number]; count: number }>()).values()];
   const inbound = links?.inbound ?? [];
   const unresolved = links?.unresolved ?? [];
   return (
@@ -22,13 +28,13 @@ export function ContextRail({ links, onNavigate }: ContextRailProps) {
       </section>
       <section className="context-section">
         <h2>Outbound <span>{outbound.length}</span></h2>
-        {outbound.length ? <ul>{outbound.map((link, index) => (
-          <li key={`${link.target}-${index}`}>
+        {outboundGroups.length ? <ul>{outboundGroups.map(({ link, count }) => (
+          <li key={link.target}>
             {link.candidates.length === 1
-              ? <button type="button" onClick={() => onNavigate(link.candidates[0])}>{link.target}</button>
+              ? <button type="button" onClick={() => onNavigate(link.candidates[0])}>{link.target}{count > 1 && <span className="link-count"> ×{count}</span>}</button>
               : link.candidates.length > 1
-                ? <details><summary>{link.target} <span>{link.candidates.length}</span></summary>{link.candidates.map((candidate) => <button key={candidate} type="button" onClick={() => onNavigate(candidate)}>{candidate}</button>)}</details>
-                : <span>{link.target}</span>}
+                ? <details><summary>{link.target}{count > 1 && <span className="link-count"> ×{count}</span>} <span>{link.candidates.length}</span></summary>{link.candidates.map((candidate) => <button key={candidate} type="button" onClick={() => onNavigate(candidate)}>{candidate}</button>)}</details>
+                : <span>{link.target}{count > 1 && <span className="link-count"> ×{count}</span>}</span>}
           </li>
         ))}</ul> : <p>None</p>}
       </section>

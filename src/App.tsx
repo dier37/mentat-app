@@ -9,9 +9,13 @@ import type { BrainFile, ChangeEvent, GutterMark, LinkResult, TreeNode } from ".
 
 const INITIAL_FILE = "CLAUDE.md";
 
+function pathFromLocation(): string {
+  return new URLSearchParams(window.location.search).get("path") ?? INITIAL_FILE;
+}
+
 export default function App() {
   const [tree, setTree] = useState<TreeNode[]>([]);
-  const [selectedPath, setSelectedPath] = useState(INITIAL_FILE);
+  const [selectedPath, setSelectedPath] = useState(pathFromLocation);
   const [file, setFile] = useState<BrainFile>();
   const [links, setLinks] = useState<LinkResult>();
   const [loading, setLoading] = useState(true);
@@ -21,6 +25,15 @@ export default function App() {
   const selectedPathRef = useRef(selectedPath);
 
   const loadTree = useCallback(async () => setTree(await getTree()), []);
+  const navigate = useCallback((path: string) => {
+    setSelectedPath((current) => {
+      if (current === path) return current;
+      const url = new URL(window.location.href);
+      url.searchParams.set("path", path);
+      window.history.pushState({}, "", url);
+      return path;
+    });
+  }, []);
   const loadDocument = useCallback(async (path: string) => {
     setLoading(true);
     setError(undefined);
@@ -38,6 +51,11 @@ export default function App() {
   useEffect(() => { void loadTree().catch((reason) => setError(`Could not load files: ${String(reason)}`)); }, [loadTree]);
   useEffect(() => { void loadDocument(selectedPath); }, [loadDocument, selectedPath]);
   useEffect(() => { selectedPathRef.current = selectedPath; }, [selectedPath]);
+  useEffect(() => {
+    const handlePopState = () => setSelectedPath(pathFromLocation());
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("live") === "0") return;
     const events = new EventSource("/api/events");
@@ -68,11 +86,11 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <FileTree nodes={tree} selectedPath={selectedPath} onSelect={setSelectedPath} />
-      <Gutter marks={marks} onNavigate={setSelectedPath} onHighlight={highlightLinks} />
-      <Reader file={file} links={links} loading={loading} error={error} onNavigate={setSelectedPath} onMarks={updateMarks} />
-      <ContextRail links={links} onNavigate={setSelectedPath} />
-      <SearchPalette open={searchOpen} tree={tree} onClose={() => setSearchOpen(false)} onNavigate={setSelectedPath} />
+      <FileTree nodes={tree} selectedPath={selectedPath} onSelect={navigate} />
+      <Gutter marks={marks} onNavigate={navigate} onHighlight={highlightLinks} />
+      <Reader file={file} links={links} loading={loading} error={error} onNavigate={navigate} onMarks={updateMarks} />
+      <ContextRail links={links} onNavigate={navigate} />
+      <SearchPalette open={searchOpen} tree={tree} onClose={() => setSearchOpen(false)} onNavigate={navigate} />
     </div>
   );
 }

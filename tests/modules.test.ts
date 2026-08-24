@@ -22,7 +22,7 @@ describe("server modules", () => {
   it("reads files, searches Markdown, and resolves wikilinks", async () => {
     const root = await createBrainFixture(); roots.push(root);
     await expect(getFile(root, "CLAUDE.md")).resolves.toMatchObject({ path: "CLAUDE.md" });
-    await expect(searchFiles(root, "alpha")).resolves.toContainEqual({ path: "CLAUDE.md", line: 3, text: "See [[alpha]] and [[missing]]." });
+    await expect(searchFiles(root, "alpha")).resolves.toContainEqual({ path: "CLAUDE.md", line: 3, text: "See [[alpha]] and [[missing]]. `[[phantom]]`" });
     const links = await getLinks(root, "CLAUDE.md");
     expect(links.outbound).toEqual([
       { target: "alpha", candidates: ["wiki/concepts/alpha.md"], resolved: true, ambiguous: false },

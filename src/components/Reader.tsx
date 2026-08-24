@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { remarkWikilinks, wikilinkTarget } from "../wikilinks";
+import { renderableWikilinks, wikilinkTarget } from "../../wikilinks";
 import type { BrainFile, GutterMark, LinkResult } from "../types";
 
 interface ReaderProps {
@@ -68,7 +68,7 @@ export function Reader({ file, links, loading, error, onNavigate, onMarks }: Rea
       <header className="file-meta"><span>{file.path}</span><span>{updatedDate(file.content) ?? new Date(file.mtime).toLocaleDateString()}</span></header>
       <article className="article">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkWikilinks]}
+          remarkPlugins={[remarkGfm]}
           urlTransform={(url) => url.startsWith("mentat:") ? url : defaultUrlTransform(url)}
           components={{
             a({ href, children }) {
@@ -77,10 +77,10 @@ export function Reader({ file, links, loading, error, onNavigate, onMarks }: Rea
               const match = links?.outbound.find((link) => link.target === target);
               if (!match?.resolved) return <span className="wikilink unresolved" data-wikilink={target} title="Not written yet">{children}</span>;
               if (match.ambiguous) return <span className="wikilink ambiguous" data-wikilink={target} title={`Multiple matches: ${match.candidates.join(", ")}`}>{children}</span>;
-              return <a className="wikilink resolved" data-wikilink={target} href={`#${match.candidates[0]}`} onClick={(event) => { event.preventDefault(); onNavigate(match.candidates[0]); }}>{children}</a>;
+              return <a className="wikilink resolved" data-wikilink={target} href={`?path=${encodeURIComponent(match.candidates[0])}`} onClick={(event) => { event.preventDefault(); onNavigate(match.candidates[0]); }}>{children}</a>;
             },
           }}
-        >{file.content}</ReactMarkdown>
+        >{renderableWikilinks(file.content)}</ReactMarkdown>
       </article>
     </main>
   );

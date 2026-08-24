@@ -31,7 +31,7 @@ describe("Phase 2 frontend", () => {
   it("renders resolved and unresolved wikilinks without transforming code", () => {
     const markup = renderToStaticMarkup(<Reader file={file} links={links} loading={false} onNavigate={() => undefined} onMarks={() => undefined} />);
     expect(markup).toContain('class="wikilink resolved"');
-    expect(markup).toContain('href="#projects/second-brain.md"');
+    expect(markup).toContain('href="?path=projects%2Fsecond-brain.md"');
     expect(markup).toContain('class="wikilink unresolved"');
     expect(markup).toContain('title="Not written yet"');
     expect(markup).toContain("<code>[[literal]]</code>");

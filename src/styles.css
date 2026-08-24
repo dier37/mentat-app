@@ -35,7 +35,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .raw-branch { opacity: .55; }
 .link-gutter { position: relative; border-right: 1px solid var(--rule); }
 .gutter-mark { position: absolute; left: 3px; width: 5px; min-height: 4px; border: 1px solid var(--rule); border-radius: 0; padding: 0; background: transparent; }
-.gutter-mark.resolved { background: var(--rule); cursor: pointer; }
+.gutter-mark.resolved { border-color: var(--ink-dim); background: var(--ink-dim); cursor: pointer; }
 .gutter-mark:hover { border-color: var(--sapho); background: var(--sapho); }
 .reading-pane { min-width: 0; padding: 0 clamp(28px, 6vw, 92px) 80px; animation: reveal 120ms ease-out; }
 .file-meta { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--rule); background: var(--ground); color: var(--ink-dim); font: 12px/1.4 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .02em; }
@@ -65,6 +65,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .context-section li { margin: 0 0 7px; overflow-wrap: anywhere; }
 .context-section button, .context-section summary { border: 0; padding: 0; background: none; color: var(--ink); text-align: left; cursor: pointer; }
 .context-section details button { display: block; margin: 7px 0 0 10px; color: var(--ink-dim); }
+.link-count { color: var(--ink-dim); }
 .context-section p { margin: 0; }
 .unresolved-list h2, .unresolved-list li { color: var(--ink); }
 
