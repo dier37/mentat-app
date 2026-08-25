@@ -52,7 +52,9 @@ export function QueryPane({ open, onClose, onNavigate, onKept }: QueryPaneProps)
   const [slug, setSlug] = useState("");
   const [keeping, setKeeping] = useState(false);
   const sourceRef = useRef<EventSource | null>(null);
+  const dialogRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   const closeStream = () => { sourceRef.current?.close(); sourceRef.current = null; };
   const dismiss = () => {
@@ -60,14 +62,31 @@ export function QueryPane({ open, onClose, onNavigate, onKept }: QueryPaneProps)
     setQuestion(""); setAskedQuestion(""); setEvents([]); setRunning(false); setDone(undefined); setError(""); setSlug("");
     onClose();
   };
-  useEffect(() => () => closeStream(), []);
+  useEffect(() => {
+    if (!open) closeStream();
+    return () => closeStream();
+  }, [open]);
   useEffect(() => {
     if (!open) return;
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     requestAnimationFrame(() => inputRef.current?.focus());
-    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") dismiss(); };
-    window.addEventListener("keydown", escape);
-    return () => window.removeEventListener("keydown", escape);
-  }, [open, onClose]);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { dismiss(); return; }
+      if (event.key !== "Tab") return;
+      const focusable = [...(dialogRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled), textarea:not(:disabled), input:not(:disabled), [href], [tabindex]:not([tabindex='-1'])") ?? [])];
+      if (focusable.length === 0) { event.preventDefault(); dialogRef.current?.focus(); return; }
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      returnFocusRef.current?.focus();
+      returnFocusRef.current = null;
+    };
+  }, [open]);
   if (!open) return null;
 
   const ask = (event: FormEvent) => {
@@ -112,7 +131,7 @@ export function QueryPane({ open, onClose, onNavigate, onKept }: QueryPaneProps)
   const limitWarning = limits && (limits.status !== "allowed" || limits.usingOverage);
   return (
     <div className="query-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) dismiss(); }}>
-      <section className="query-pane" role="dialog" aria-modal="true" aria-label="Ask the wiki">
+      <section ref={dialogRef} className="query-pane" role="dialog" aria-modal="true" aria-label="Ask the wiki" tabIndex={-1}>
         <header className="query-header"><div><span>Query</span><small>Ask the wiki, then keep only what matters.</small></div><button type="button" onClick={dismiss}>Close</button></header>
         <form className="query-form" onSubmit={ask}>
           <label htmlFor="wiki-question">Question</label>

@@ -158,3 +158,36 @@ subprocess inherits user-level settings, so a permissive `permissions.allow` in
 `~/.claude/settings.json` could widen the boundary with nothing in this repo changing. Verified
 `CLAUDE.md` still loads under the flag — inheriting it is the reason this engine was chosen over
 a direct API call.
+
+## 2026-08-25 — Phase 6 gate — cancellation at the owner, and a modal that means it
+
+Two findings from claude's gate of the query pane, both fixed by chatgpt.
+
+**The pane returned `null` when closed, and rendering null is not unmounting.** `closeStream()`
+ran on `done`, on `error`, on `dismiss()` and on unmount — but not when the parent flipped the
+`open` prop. Nothing leaked in practice, purely by ordering: `onKept` can only fire after `done`
+has already closed the stream, and `onNavigate` is called from inside `dismiss()`. But
+`App.tsx` holds three close handlers and the next `setQueryOpen(false)` written anywhere would
+have leaked a live query with no test to catch it. The effect now closes on the `open`
+transition as well as on unmount, so the invariant lives in the component that owns the
+connection rather than in its callers.
+
+**`aria-modal="true"` was a claim the keyboard did not honour.** Escape, the close button, the
+backdrop and source navigation all dismissed correctly, and focus moved into the textarea on
+open — but Tab walked straight out into the reader behind, and focus was never returned to the
+control that opened the pane. Added a dialog ref, Tab/Shift+Tab wrapping across enabled
+focusable controls, `tabIndex={-1}` on the dialog as the fallback target, and focus restoration
+in the effect cleanup.
+
+**`onClose` came out of that effect's dependency list, and that is load-bearing rather than
+tidy.** `App` passes an inline arrow, so its identity changes on every parent render. With
+`onClose` still in the deps and focus restoration now in the cleanup, an unrelated re-render
+would have torn the effect down and pulled focus out of an open dialog. The bug did not exist
+before this patch and would have arrived with it. Safe only because `onClose` is a pure state
+setter here; if it ever does something render-dependent, the stale closure becomes real.
+
+Neither behaviour is executed by the suite. This repo has no DOM environment — every frontend
+test is `renderToStaticMarkup`, which runs no effects and no events — so both fixes are gated by
+reading, and both agents said so rather than implying test coverage. Adding jsdom is a
+dependency decision and was left to Germano. Typecheck clean, 114 passed, 2 opt-in live tests
+skipped.
